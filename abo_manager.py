@@ -4,6 +4,7 @@ import os
 
 STATUS_FILE = "status.json"
 
+# JSON lesen
 def lade_status():
     if os.path.exists(STATUS_FILE):
         with open(STATUS_FILE, "r") as f:
@@ -11,32 +12,56 @@ def lade_status():
     else:
         return {}
 
+# JSON speichern
 def speichere_status(status):
     with open(STATUS_FILE, "w") as f:
         json.dump(status, f)
 
 st.title("👥 Abo-Kosten-Manager für Gruppen")
 
-# Lade gespeicherten Status
+# Status laden
 status = lade_status()
 
-# Teilnehmerliste
+# Abschnitt: Teilnehmer
 st.header("1. Teilnehmer hinzufügen")
-teilnehmer = st.text_input("Gib die Namen der Teilnehmer ein (getrennt mit Kommas)", "Anna, Ben, Chris")
+
+# Werte aus session_state setzen
+if "teilnehmer_input" not in st.session_state:
+    st.session_state.teilnehmer_input = "Thushanth, Yannik, Paul, Ines, Mona, Benedikt"
+
+teilnehmer = st.text_input(
+    "Gib die Namen der Teilnehmer ein (getrennt mit Kommas)", 
+    st.session_state.teilnehmer_input
+)
+st.session_state.teilnehmer_input = teilnehmer
+
 teilnehmer_liste = [t.strip() for t in teilnehmer.split(",") if t.strip()]
 
-# Abo-Eingabe
+# Abschnitt: Abo
 st.header("2. Abo hinzufügen")
-abo_name = st.text_input("Name des Abos", "Netflix")
-abo_kosten = st.number_input("Gesamtkosten (€)", min_value=0.0, step=0.01)
-beteiligte = st.multiselect("Wer ist beteiligt?", teilnehmer_liste, default=teilnehmer_liste)
 
-# Init Status-Einträge, wenn nicht vorhanden
+if "abo_name" not in st.session_state:
+    st.session_state.abo_name = "Spotify"
+if "abo_kosten" not in st.session_state:
+    st.session_state.abo_kosten = 18.00
+if "beteiligte" not in st.session_state:
+    st.session_state.beteiligte = teilnehmer_liste
+
+abo_name = st.text_input("Name des Abos", st.session_state.abo_name)
+st.session_state.abo_name = abo_name
+
+abo_kosten = st.number_input("Gesamtkosten (€)", min_value=0.0, step=0.01, value=st.session_state.abo_kosten)
+st.session_state.abo_kosten = abo_kosten
+
+beteiligte = st.multiselect("Wer ist beteiligt?", teilnehmer_liste, default=st.session_state.beteiligte)
+st.session_state.beteiligte = beteiligte
+
+# Zahlungsstatus initialisieren
 for person in beteiligte:
     if person not in status:
         status[person] = False
 
-# Berechnung & Anzeige
+# Button: Anteile berechnen
 if st.button("Berechne Anteile"):
     if not beteiligte:
         st.warning("Bitte wähle mindestens eine Person aus.")
