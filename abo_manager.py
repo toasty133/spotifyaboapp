@@ -79,9 +79,9 @@ if st.session_state.berechnet and beteiligte:
                 if st.button(f"✅ Bezahlt ({person})"):
                     status[person] = False
                     speichere_status(status)
-                    st.experimental_rerun()
+                    st.rerun()
             else:
                 if st.button(f"❌ Offen ({person})"):
                     status[person] = True
                     speichere_status(status)
-                    st.experimental_rerun()
+                    st.rerun()
